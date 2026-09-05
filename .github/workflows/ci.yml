@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main, develop]
+
   pull_request:
     branches: [main, develop]
 
@@ -16,7 +17,12 @@ jobs:
 
       - name: Detectar secretos
         run: |
-          docker run --rm -v "$PWD":/src aquasec/trivy fs --scanners secret --exit-code 1 /src
+          docker run --rm \
+            -v "$PWD":/src \
+            aquasec/trivy fs \
+            --scanners secret \
+            --exit-code 1 \
+            /src
 
       - name: Configurar Flutter
         uses: subosito/flutter-action@v2
@@ -34,3 +40,31 @@ jobs:
       - name: Ejecutar pruebas
         working-directory: app
         run: flutter test --coverage
+
+      - name: Instalar herramienta de cobertura
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov
+
+      - name: Verificar cobertura del dominio
+        working-directory: app
+        run: |
+          lcov --extract coverage/lcov.info '*/lib/features/*/domain/*' \
+            --output-file coverage/domain.info
+
+          COBERTURA=$(lcov --summary coverage/domain.info 2>&1 | awk '/lines/ {gsub("%","",$2); print $2}')
+
+          echo "Cobertura del dominio: $COBERTURA%"
+
+          awk -v cobertura="$COBERTURA" 'BEGIN {
+            if (cobertura < 70) {
+              print "ERROR: La cobertura del dominio es menor al 70%"
+              exit 1
+            } else {
+              print "Cobertura del dominio correcta"
+            }
+          }'
+
+      - name: Compilar aplicación
+        working-directory: app
+        run: flutter build apk --debug
