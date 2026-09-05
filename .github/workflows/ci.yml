@@ -46,25 +46,33 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lcov
 
-      - name: Verificar cobertura del dominio
+      - name: Verificar cobertura de la logica
         working-directory: app
         run: |
-          lcov --extract coverage/lcov.info '*/lib/features/*/domain/*' \
+          lcov --extract coverage/lcov.info \
+            '*/lib/features/incidencias/domain/*' \
+            '*/lib/features/incidencias/presentation/incidencias_view_model.dart' \
+            --ignore-errors empty \
             --output-file coverage/domain.info
 
           COBERTURA=$(lcov --summary coverage/domain.info 2>&1 | awk '/lines/ {gsub("%","",$2); print $2}')
 
-          echo "Cobertura del dominio: $COBERTURA%"
+          echo "Cobertura de la logica: $COBERTURA%"
+
+          if [ -z "$COBERTURA" ]; then
+            echo "ERROR: No se pudo calcular la cobertura"
+            exit 1
+          fi
 
           awk -v cobertura="$COBERTURA" 'BEGIN {
             if (cobertura < 70) {
-              print "ERROR: La cobertura del dominio es menor al 70%"
+              print "ERROR: La cobertura es menor al 70%"
               exit 1
             } else {
-              print "Cobertura del dominio correcta"
+              print "Cobertura correcta: minimo 70% cumplido"
             }
           }'
 
-      - name: Compilar aplicación
+      - name: Compilar aplicacion
         working-directory: app
         run: flutter build apk --debug
