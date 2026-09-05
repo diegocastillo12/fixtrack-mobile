@@ -41,33 +41,47 @@ jobs:
         working-directory: app
         run: flutter test --coverage
 
-      - name: Instalar herramienta de cobertura
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lcov
-
       - name: Verificar cobertura del dominio
         working-directory: app
         run: |
-          lcov --extract coverage/lcov.info \
-            '*/lib/features/incidencias/domain/incidencia_validator.dart' \
-            --output-file coverage/domain.info
+          RESULTADO=$(awk '
+            /^SF:/ {
+              archivo = $0
+              objetivo = (archivo ~ /lib\/features\/incidencias\/domain\/incidencia_validator\.dart$/)
+            }
 
-          COBERTURA=$(lcov --summary coverage/domain.info 2>&1 | awk '/lines/ {gsub("%","",$2); print $2}')
+            objetivo && /^LF:/ {
+              split($0, a, ":")
+              total += a[2]
+            }
 
-          echo "Cobertura del dominio: $COBERTURA%"
+            objetivo && /^LH:/ {
+              split($0, a, ":")
+              cubiertas += a[2]
+            }
 
-          if [ -z "$COBERTURA" ]; then
-            echo "ERROR: No se pudo calcular la cobertura"
+            END {
+              if (total == 0) {
+                print "SIN_DATOS"
+              } else {
+                printf "%.2f", (cubiertas / total) * 100
+              }
+            }
+          ' coverage/lcov.info)
+
+          echo "Cobertura del dominio: $RESULTADO%"
+
+          if [ "$RESULTADO" = "SIN_DATOS" ]; then
+            echo "ERROR: No se encontraron datos de cobertura del dominio"
             exit 1
           fi
 
-          awk -v cobertura="$COBERTURA" 'BEGIN {
+          awk -v cobertura="$RESULTADO" 'BEGIN {
             if (cobertura < 70) {
               print "ERROR: La cobertura del dominio es menor al 70%"
               exit 1
             } else {
-              print "Cobertura del dominio correcta"
+              print "Cobertura del dominio correcta: " cobertura "%"
             }
           }'
 
