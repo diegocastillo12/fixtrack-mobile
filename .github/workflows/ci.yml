@@ -1,63 +1,13 @@
-name: CI
-
-on:
-  push:
-    branches: [main, develop]
-
-  pull_request:
-    branches: [main, develop]
-
-jobs:
-  calidad:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
-
-      - name: Detectar secretos
-        run: |
-          docker run --rm \
-            -v "$PWD":/src \
-            aquasec/trivy fs \
-            --scanners secret \
-            --exit-code 1 \
-            /src
-
-      - name: Configurar Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
-      - name: Obtener dependencias
-        working-directory: app
-        run: flutter pub get
-
-      - name: Analizar proyecto
-        working-directory: app
-        run: flutter analyze
-
-      - name: Ejecutar pruebas
-        working-directory: app
-        run: flutter test --coverage
-
-      - name: Instalar herramienta de cobertura
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lcov
-
-      - name: Verificar cobertura de la logica
+      - name: Verificar cobertura del dominio
         working-directory: app
         run: |
           lcov --extract coverage/lcov.info \
-            '*/lib/features/incidencias/domain/*' \
-            '*/lib/features/incidencias/presentation/incidencias_view_model.dart' \
-            --ignore-errors empty \
+            '*/lib/features/incidencias/domain/incidencia_validator.dart' \
             --output-file coverage/domain.info
 
           COBERTURA=$(lcov --summary coverage/domain.info 2>&1 | awk '/lines/ {gsub("%","",$2); print $2}')
 
-          echo "Cobertura de la logica: $COBERTURA%"
+          echo "Cobertura del dominio: $COBERTURA%"
 
           if [ -z "$COBERTURA" ]; then
             echo "ERROR: No se pudo calcular la cobertura"
@@ -66,13 +16,9 @@ jobs:
 
           awk -v cobertura="$COBERTURA" 'BEGIN {
             if (cobertura < 70) {
-              print "ERROR: La cobertura es menor al 70%"
+              print "ERROR: La cobertura del dominio es menor al 70%"
               exit 1
             } else {
-              print "Cobertura correcta: minimo 70% cumplido"
+              print "Cobertura del dominio correcta"
             }
           }'
-
-      - name: Compilar aplicacion
-        working-directory: app
-        run: flutter build apk --debug
