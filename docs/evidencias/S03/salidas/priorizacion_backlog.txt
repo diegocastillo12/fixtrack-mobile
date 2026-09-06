@@ -3,7 +3,7 @@ Elementos del backlog: 28
 Total de puntos: 113
 Historias sin estimar: 0
 Historias >= 13 puntos: 0
-Elementos que tratan datos personales: 9
+Elementos que tratan datos personales: 10
 
 === ORDEN POR VALOR + RIESGO ===
 ID       Valor   Riesgo   Puntos   Indice

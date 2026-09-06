@@ -1,29 +1,29 @@
 id,Épica,Tipo,Historia de usuario,Criterios de aceptación,Valor (1–5),Riesgo (1–5),Puntos,Prioridad,¿Trata datos personales?,¿Requisitos de seguridad?,Sprint previsto
-US-01,Acceso,Historia,"Como usuario quiero iniciar sesión para acceder a FixTrack","Credenciales válidas permiten acceso; inválidas muestran mensaje",5,4,5,1,Sí: correo,Sí,1
-US-02,Acceso,Historia,"Como usuario quiero cerrar sesión para proteger mi cuenta","La sesión se cierra y vuelve a la pantalla de acceso",4,3,2,2,Sí: correo,Sí,1
-US-03,Acceso,Historia,"Como administrador quiero registrar usuarios para asignar acceso","Se valida correo y se crea el usuario",4,4,5,3,Sí: correo,Sí,2
-US-04,Activos,Historia,"Como usuario quiero ver la lista de activos para consultarlos","Muestra lista; vacío; sin conexión; error",5,3,3,4,No,No,1
-US-05,Activos,Historia,"Como usuario quiero buscar un activo por nombre o código","Filtra resultados correctamente",5,2,3,5,No,No,1
-US-06,Activos,Historia,"Como usuario quiero ver el detalle de un activo","Muestra información completa del activo",5,2,3,6,No,No,1
-US-07,QR,Historia,"Como usuario quiero escanear un código QR para identificar un activo","La cámara lee el QR y abre el activo",5,4,5,7,No,No,1
-US-08,QR,Historia,"Como administrador quiero generar códigos QR para los activos","Se genera un QR único por activo",4,3,5,8,No,No,2
-US-09,Incidencias,Historia,"Como usuario quiero registrar una incidencia sobre un activo","Permite registrar descripción y estado",5,4,5,9,Sí: nombre,Sí,1
+US-17,Sincronización,Historia,"Como usuario quiero conservar datos cuando no haya internet","Muestra datos guardados y avisa desactualización",5,5,8,1,No,No,3
+US-18,Sincronización,Historia,"Como usuario quiero sincronizar los cambios al recuperar conexión","Envía cambios pendientes",5,5,8,2,No,No,3
+US-21,Seguridad,Historia,"Como administrador quiero controlar permisos por rol","Cada rol accede solo a sus funciones",5,5,8,3,"Sí: identidad y rol",Sí,3
+US-01,Acceso,Historia,"Como usuario quiero iniciar sesión para acceder a FixTrack","Credenciales válidas permiten acceso; inválidas muestran mensaje",5,4,5,4,"Sí: correo y credenciales",Sí,1
+US-07,QR,Historia,"Como usuario quiero escanear un código QR para identificar un activo","La cámara lee el QR y abre el activo",5,4,5,5,No,No,1
+US-09,Incidencias,Historia,"Como usuario quiero registrar una incidencia sobre un activo","Permite registrar descripción y estado",5,4,5,6,"Sí: nombre del usuario",Sí,1
+TD-03,Habilitadores,Deuda técnica,"Configurar integración continua","CI ejecuta análisis y pruebas",5,4,5,7,No,No,1
+SP-03,Integración,Spike,"Evaluar estrategia de sincronización","Documento con propuesta",4,5,3,8,No,No,3
+US-04,Activos,Historia,"Como usuario quiero ver la lista de activos para consultarlos","Muestra lista; vacío; sin conexión; error",5,3,3,9,No,No,1
 US-10,Incidencias,Historia,"Como usuario quiero ver las incidencias de un activo","Muestra lista; vacío; sin conexión; error",5,3,3,10,No,No,1
-US-11,Incidencias,Historia,"Como usuario quiero actualizar el estado de una incidencia","Permite cambiar entre estados válidos",4,3,3,11,No,No,2
-US-12,Incidencias,Historia,"Como usuario quiero agregar comentarios a una incidencia","Guarda y muestra comentarios",4,3,3,12,Sí: nombre,No,2
-US-13,Incidencias,Historia,"Como usuario quiero adjuntar una fotografía a una incidencia","Permite seleccionar o capturar imagen",4,4,5,13,No,No,2
-US-14,Notificaciones,Historia,"Como usuario quiero recibir notificaciones cuando cambie una incidencia","Muestra notificación del cambio",4,4,5,14,No,No,3
-US-15,Reportes,Historia,"Como administrador quiero consultar incidencias abiertas","Filtra incidencias pendientes",4,3,3,15,No,No,3
-US-16,Reportes,Historia,"Como administrador quiero ver activos con más incidencias","Muestra resumen ordenado",3,3,3,16,No,No,3
-US-17,Sincronización,Historia,"Como usuario quiero conservar datos cuando no haya internet","Muestra datos guardados y avisa desactualización",5,5,8,17,No,No,3
-US-18,Sincronización,Historia,"Como usuario quiero sincronizar los cambios al recuperar conexión","Envía cambios pendientes",5,5,8,18,No,No,3
-US-19,Perfil,Historia,"Como usuario quiero ver mi perfil","Muestra nombre y correo",3,2,2,19,Sí: correo,Sí,2
-US-20,Perfil,Historia,"Como usuario quiero editar mis datos básicos","Valida y actualiza información",3,3,3,20,Sí: correo,Sí,3
-US-21,Seguridad,Historia,"Como administrador quiero controlar permisos por rol","Cada rol accede solo a sus funciones",5,5,8,21,Sí: correo,Sí,3
-US-22,Seguridad,Historia,"Como usuario quiero que mi sesión expire por seguridad","La sesión caduca tras el tiempo definido",4,4,3,22,Sí: correo,Sí,3
-TD-01,Habilitadores,Deuda técnica,"Configurar inyección de dependencias","Las dependencias pueden reemplazarse en pruebas",4,4,3,23,No,No,1
+US-03,Acceso,Historia,"Como administrador quiero registrar usuarios para asignar acceso","Se valida correo y se crea el usuario",4,4,5,11,"Sí: nombre y correo",Sí,2
+US-13,Incidencias,Historia,"Como usuario quiero adjuntar una fotografía a una incidencia","Permite seleccionar o capturar imagen",4,4,5,12,"Sí: posible información identificable en fotografía",Sí,2
+US-14,Notificaciones,Historia,"Como usuario quiero recibir notificaciones cuando cambie una incidencia","Muestra notificación del cambio",4,4,5,13,No,No,3
+US-22,Seguridad,Historia,"Como usuario quiero que mi sesión expire por seguridad","La sesión caduca tras el tiempo definido",4,4,3,14,"Sí: datos de sesión",Sí,3
+TD-01,Habilitadores,Deuda técnica,"Configurar inyección de dependencias","Las dependencias pueden reemplazarse en pruebas",4,4,3,15,No,No,1
+US-05,Activos,Historia,"Como usuario quiero buscar un activo por nombre o código","Filtra resultados correctamente",5,2,3,16,No,No,1
+US-06,Activos,Historia,"Como usuario quiero ver el detalle de un activo","Muestra información completa del activo",5,2,3,17,No,No,1
+SP-01,Integración,Spike,"Investigar almacenamiento local para modo offline","Documento con alternativa seleccionada",3,5,3,18,No,No,2
+US-02,Acceso,Historia,"Como usuario quiero cerrar sesión para proteger mi cuenta","La sesión se cierra y vuelve a la pantalla de acceso",4,3,2,19,"Sí: correo y datos de sesión",Sí,1
+US-08,QR,Historia,"Como administrador quiero generar códigos QR para los activos","Se genera un QR único por activo",4,3,5,20,No,No,2
+US-11,Incidencias,Historia,"Como usuario quiero actualizar el estado de una incidencia","Permite cambiar entre estados válidos",4,3,3,21,No,No,2
+US-12,Incidencias,Historia,"Como usuario quiero agregar comentarios a una incidencia","Guarda y muestra comentarios",4,3,3,22,"Sí: nombre del usuario",Sí,2
+US-15,Reportes,Historia,"Como administrador quiero consultar incidencias abiertas","Filtra incidencias pendientes",4,3,3,23,No,No,3
 TD-02,Habilitadores,Deuda técnica,"Configurar pruebas automatizadas","Las pruebas se ejecutan correctamente",4,3,3,24,No,No,1
-TD-03,Habilitadores,Deuda técnica,"Configurar integración continua","CI ejecuta análisis y pruebas",5,4,5,25,No,No,1
-SP-01,Integración,Spike,"Investigar almacenamiento local para modo offline","Documento con alternativa seleccionada",3,5,3,26,No,No,2
-SP-02,Integración,Spike,"Investigar notificaciones móviles","Documento con conclusión técnica",3,4,3,27,No,No,2
-SP-03,Integración,Spike,"Evaluar estrategia de sincronización","Documento con propuesta",4,5,3,28,No,No,3
+SP-02,Integración,Spike,"Investigar notificaciones móviles","Documento con conclusión técnica",3,4,3,25,No,No,2
+US-16,Reportes,Historia,"Como administrador quiero ver activos con más incidencias","Muestra resumen ordenado",3,3,3,26,No,No,3
+US-20,Perfil,Historia,"Como usuario quiero editar mis datos básicos","Valida y actualiza información",3,3,3,27,"Sí: nombre y correo",Sí,3
+US-19,Perfil,Historia,"Como usuario quiero ver mi perfil","Muestra nombre y correo",3,2,2,28,"Sí: nombre y correo",Sí,2
