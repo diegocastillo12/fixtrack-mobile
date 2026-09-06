@@ -1,0 +1,37 @@
+=== PRIORIZACION DEL PRODUCT BACKLOG - FIXTRACK ===
+Elementos del backlog: 28
+Total de puntos: 113
+Historias sin estimar: 0
+Historias >= 13 puntos: 0
+Elementos que tratan datos personales: 9
+
+=== ORDEN POR VALOR + RIESGO ===
+ID       Valor   Riesgo   Puntos   Indice
+US-17    5       5        8        5.00
+US-18    5       5        8        5.00
+US-21    5       5        8        5.00
+US-01    5       4        5        4.60
+US-07    5       4        5        4.60
+US-09    5       4        5        4.60
+TD-03    5       4        5        4.60
+SP-03    4       5        3        4.40
+US-04    5       3        3        4.20
+US-10    5       3        3        4.20
+US-03    4       4        5        4.00
+US-13    4       4        5        4.00
+US-14    4       4        5        4.00
+US-22    4       4        3        4.00
+TD-01    4       4        3        4.00
+US-05    5       2        3        3.80
+US-06    5       2        3        3.80
+SP-01    3       5        3        3.80
+US-02    4       3        2        3.60
+US-08    4       3        5        3.60
+US-11    4       3        3        3.60
+US-12    4       3        3        3.60
+US-15    4       3        3        3.60
+TD-02    4       3        3        3.60
+SP-02    3       4        3        3.40
+US-16    3       3        3        3.00
+US-20    3       3        3        3.00
+US-19    3       2        2        2.60
