@@ -97,7 +97,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return 'La contraseña no cumple los requisitos.';
     }
 
-    return 'No pudimos crear tu cuenta. Inténtalo de nuevo.';
+    return 'Error de Supabase: ${error.message}';
   }
 
   String? _validarNombre(String? value) {
