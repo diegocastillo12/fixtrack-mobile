@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/network/dio_client.dart';
@@ -14,8 +11,6 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
   IncidenciaRepositoryImpl({Dio? dio}) : _dio = dio ?? _crearDio();
 
   final Dio _dio;
-
-  static const _cacheKey = 'incidencias_cache';
 
   static Dio _crearDio() {
     const baseUrl = String.fromEnvironment(
@@ -36,34 +31,31 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
 
   @override
   Future<List<Incidencia>> obtenerIncidencias() async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '/incidencias',
-        queryParameters: {'limit': 20},
-      );
+    const datosDemo = [
+      {
+        'id': 'INC-001',
+        'titulo': 'Mouse no funciona',
+        'descripcion': 'El mouse de la computadora LAB-01 no responde.',
+        'estado': 'Pendiente',
+      },
+      {
+        'id': 'INC-002',
+        'titulo': 'Proyector sin imagen',
+        'descripcion': 'El proyector del laboratorio LAB-02 no muestra imagen.',
+        'estado': 'En progreso',
+      },
+      {
+        'id': 'INC-003',
+        'titulo': 'Teclado defectuoso',
+        'descripcion': 'Varias teclas del equipo LAB-03 no funcionan.',
+        'estado': 'Resuelto',
+      },
+    ];
 
-      final datos = _extraerLista(response.data);
-
-      final incidencias = datos
-          .map(
-            (json) =>
-                IncidenciaDto.fromJson(Map<String, dynamic>.from(json as Map)),
-          )
-          .map(IncidenciaMapper.toDomain)
-          .toList();
-
-      await _guardarCache(incidencias);
-
-      return incidencias;
-    } on DioException {
-      final cache = await _leerCache();
-
-      if (cache.isNotEmpty) {
-        return cache;
-      }
-
-      rethrow;
-    }
+    return datosDemo
+        .map((json) => IncidenciaDto.fromJson(json))
+        .map(IncidenciaMapper.toDomain)
+        .toList();
   }
 
   Future<Incidencia> crearIncidencia({
@@ -86,59 +78,4 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
     return IncidenciaMapper.toDomain(IncidenciaDto.fromJson(json));
   }
 
-  List<dynamic> _extraerLista(dynamic data) {
-    if (data is List) {
-      return data;
-    }
-
-    if (data is Map<String, dynamic>) {
-      final lista = data['data'];
-
-      if (lista is List) {
-        return lista;
-      }
-    }
-
-    return <dynamic>[];
-  }
-
-  Future<void> _guardarCache(List<Incidencia> incidencias) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final datos = incidencias
-        .map(
-          (incidencia) => {
-            'id': incidencia.id,
-            'titulo': incidencia.titulo,
-            'descripcion': incidencia.descripcion,
-            'estado': incidencia.estado,
-          },
-        )
-        .toList();
-
-    await prefs.setString(_cacheKey, jsonEncode(datos));
-  }
-
-  Future<List<Incidencia>> _leerCache() async {
-    final prefs = await SharedPreferences.getInstance();
-    final contenido = prefs.getString(_cacheKey);
-
-    if (contenido == null || contenido.isEmpty) {
-      return [];
-    }
-
-    final datos = jsonDecode(contenido);
-
-    if (datos is! List) {
-      return [];
-    }
-
-    return datos
-        .map(
-          (json) =>
-              IncidenciaDto.fromJson(Map<String, dynamic>.from(json as Map)),
-        )
-        .map(IncidenciaMapper.toDomain)
-        .toList();
-  }
 }

@@ -1,5 +1,5 @@
 class IncidenciaDto {
-  final int id;
+  final Object id;
   final String titulo;
   final String descripcion;
   final String estado;
@@ -13,7 +13,7 @@ class IncidenciaDto {
 
   factory IncidenciaDto.fromJson(Map<String, dynamic> json) {
     return IncidenciaDto(
-      id: json['id'] as int,
+      id: json['id'] as Object,
       titulo: json['titulo'] as String,
       descripcion: json['descripcion'] as String,
       estado: json['estado'] as String,

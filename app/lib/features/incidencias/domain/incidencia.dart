@@ -1,5 +1,5 @@
 class Incidencia {
-  final int id;
+  final Object id;
   final String titulo;
   final String descripcion;
   final String estado;
