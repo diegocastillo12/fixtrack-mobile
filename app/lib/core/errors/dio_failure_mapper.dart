@@ -4,18 +4,22 @@ import 'package:dio/dio.dart';
 
 import 'failure.dart';
 
-/// Mapeador centralizado para transformar errores de transporte y red
-/// en errores semánticos ([Failure]) de la aplicación FixTrack.
+/// ============================================================================
+/// EXAMEN 4 — PUNTO 3: CAPTURA Y TRANSFORMACIÓN DE ERRORES DE TRANSPORTE
+///
+/// Mapeador centralizado para transformar errores técnicos de red (DioException,
+/// SocketException) en errores semánticos entendibles por el usuario y la UI:
+/// - Caso A: Timeout de conexión/envío/recepción -> [TiempoAgotado] («Tiempo agotado»)
+/// - Caso B: Desconexión o SocketException -> [SinConexion] («Sin conexión»)
+/// - Evita doble transformación devolviendo el [Failure] si ya fue procesado.
+/// - Discrimina errores HTTP (400, 500) para no confundirlos con fallas de red.
+/// ============================================================================
 class DioFailureMapper {
-  /// Transforma un error de transporte (timeout, conectividad, SocketException)
-  /// en su correspondiente [Failure] semántico:
-  /// - Timeout -> [TiempoAgotado] ('Tiempo agotado')
-  /// - Conectividad / SocketException -> [SinConexion] ('Sin conexión')
-  /// - Si ya es un [Failure], se devuelve directamente (evita doble transformación).
-  /// - Errores HTTP de servidor o validación no se confunden con desconexión.
+  /// Transforma cualquier error de red en un [Failure] semántico de la aplicación.
   static Failure map(Object error) {
     // Evita doble transformación
     if (error is Failure) {
+
       return error;
     }
 

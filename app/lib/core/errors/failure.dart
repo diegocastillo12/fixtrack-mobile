@@ -1,16 +1,32 @@
+/// ============================================================================
+/// EXAMEN 4 — JERARQUÍA DE ERRORES SEMÁNTICOS (Failures)
+///
+/// Modela los errores de dominio de FixTrack para independizar la capa
+/// de presentación (UI) de las librerías técnicas de red (Dio/Sockets).
+///
+/// PUNTO 3:
+/// - [SinConexion]: Error semántico con mensaje «Sin conexión».
+/// - [TiempoAgotado]: Error semántico con mensaje «Tiempo agotado».
+/// ============================================================================
 sealed class Failure {
   const Failure(this.mensaje);
 
+  /// Mensaje visible y amigable para el usuario en la interfaz.
   final String mensaje;
 }
 
+/// Representa la pérdida o ausencia total de conectividad (ej. Modo Avión,
+/// corte de red o SocketException). Mensaje por defecto: «Sin conexión».
 final class SinConexion extends Failure {
   const SinConexion([super.mensaje = 'Sin conexión']);
 }
 
+/// Representa que una petición superó el tiempo límite de espera (timeout).
+/// Mensaje por defecto: «Tiempo agotado».
 final class TiempoAgotado extends Failure {
   const TiempoAgotado([super.mensaje = 'Tiempo agotado']);
 }
+
 
 
 final class NoAutorizado extends Failure {

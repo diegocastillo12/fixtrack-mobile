@@ -3,19 +3,36 @@ import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
 
+/// ============================================================================
+/// EXAMEN 4 — CLIENTE DE RED CENTRALIZADO (DioClient)
+/// 
+/// Responsabilidades:
+/// - PUNTO 2: Timeout configurable mediante parámetro en el constructor (Duration).
+///   Permite inyectar tiempos de espera personalizados (ej. 3 segundos para
+///   incidencias) sin quemar constantes dentro de pantallas ni ViewModels.
+/// - PUNTO 1 & 4: Parámetro [enableAutoRetry] que permite desactivar reintentos
+///   automáticos en flujos manuales, garantizando exactamente 1 petición de red
+///   por cada pulsación del usuario.
+/// ============================================================================
 class DioClient {
-  /// [enableAutoRetry] controla si el interceptor de reintentos automáticos
-  /// está activo. Establécelo en `false` cuando el caller gestione los
-  /// reintentos manualmente (p.ej. la pantalla de incidencias).
+  /// Constructor configurable de [DioClient].
   ///
-  /// [timeout] configura los tiempos de espera (connectTimeout, receiveTimeout,
-  /// sendTimeout) del cliente HTTP.
+  /// Parámetros:
+  /// - [baseUrl]: URL base del backend o servicio REST.
+  /// - [tokenProvider]: Función asíncrona para obtener el token de autenticación.
+  /// - [enableAutoRetry]: Si es `true` (por defecto), reintenta automáticamente
+  ///   ante errores de red transitorios (HTTP 503, 429, timeouts). Si es `false`,
+  ///   se omite el interceptor de reintento para que la lógica manual de la UI
+  ///   controle cada solicitud sin peticiones duplicadas.
+  /// - [timeout]: Duración de espera máxima para conexión, envío y recepción.
+  ///   Por defecto 10 segundos, personalizable (ej. 3 segundos en Incidencias).
   DioClient({
     required String baseUrl,
     required Future<String?> Function() tokenProvider,
     bool enableAutoRetry = true,
     Duration timeout = const Duration(seconds: 10),
   }) {
+    // Configuración de opciones base con timeout configurable (Punto 2)
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -28,6 +45,7 @@ class DioClient {
         },
       ),
     );
+
 
 
     // Interceptor de autenticación.

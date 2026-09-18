@@ -13,17 +13,20 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
 
   final Dio _dio;
 
+  /// Factoría para crear el cliente Dio utilizado por las incidencias.
+  ///
+  /// EXAMEN 4:
+  /// - PUNTO 2: Se configura un timeout de 3 segundos (`const Duration(seconds: 3)`)
+  ///   al instanciar el cliente, cumpliendo el requisito de no colocar constantes
+  ///   dentro de las pantallas ni del ViewModel.
+  /// - PUNTO 1: Se establece `enableAutoRetry: false` para que cada pulsación del
+  ///   botón manual «Reintentar» genere exactamente una solicitud HTTP.
   static Dio _crearDio() {
     const baseUrl = String.fromEnvironment(
       'API_BASE',
       defaultValue: 'http://10.0.2.2:4010',
     );
 
-    // enableAutoRetry: false porque el IncidenciasViewModel gestiona los
-    // reintentos manualmente. Esto garantiza que cada pulsación del botón
-    // «Reintentar» genere exactamente una petición de red.
-    // timeout: 3 segundos configurado en la creación del cliente HTTP, sin
-    // colocar constantes dentro de la pantalla ni del ViewModel.
     final cliente = DioClient(
       baseUrl: baseUrl,
       tokenProvider: () async {
@@ -34,10 +37,17 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
       timeout: const Duration(seconds: 3),
     );
 
-
     return cliente.dio;
   }
 
+  /// Obtiene el listado de incidencias desde la API REST.
+  ///
+  /// EXAMEN 4 — PUNTO 3:
+  /// - Captura errores de transporte mediante [DioFailureMapper.mapTransportError].
+  /// - Transforma timeouts en [TiempoAgotado] («Tiempo agotado»).
+  /// - Transforma SocketException o caídas de red en [SinConexion] («Sin conexión»).
+  /// - Relanza errores HTTP (ej. 400, 500) para no clasificarlos indebidamente
+  ///   como desconexiones.
   @override
   Future<List<Incidencia>> obtenerIncidencias() async {
     try {
@@ -55,6 +65,7 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
           .map(IncidenciaMapper.toDomain)
           .toList();
     } catch (error) {
+      // Mapeo centralizado de errores de transporte a Failures semánticos
       final failure = DioFailureMapper.mapTransportError(error);
       if (failure != null) {
         throw failure;
@@ -62,6 +73,7 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
       rethrow;
     }
   }
+
 
 
   Future<Incidencia> crearIncidencia({
