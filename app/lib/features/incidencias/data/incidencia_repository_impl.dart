@@ -1,7 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/navigation/app_navigator.dart';
 import '../../../core/network/dio_client.dart';
+import '../../auth/data/supabase_auth_gateway.dart';
+import '../../auth/presentation/login_page.dart';
 import '../domain/incidencia.dart';
 import '../domain/incidencia_repository.dart';
 import 'incidencia_dto.dart';
@@ -21,8 +26,15 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
     final cliente = DioClient(
       baseUrl: baseUrl,
       tokenProvider: () async {
-        const token = String.fromEnvironment('API_TOKEN');
-        return token.isEmpty ? null : token;
+        return Supabase.instance.client.auth.currentSession?.accessToken;
+      },
+      onUnauthorized: () async {
+        await LocalTokenStore().clear();
+        await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
+        appNavigatorKey.currentState?.pushAndRemoveUntil(
+          MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+          (_) => false,
+        );
       },
     );
 

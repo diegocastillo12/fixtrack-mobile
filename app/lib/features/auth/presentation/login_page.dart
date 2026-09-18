@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../data/supabase_auth_gateway.dart';
+import '../domain/login_controller.dart';
 import '../../incidencias/presentation/incidencias_page.dart';
 import 'register_page.dart';
 
@@ -19,6 +21,10 @@ class _LoginPageState extends State<LoginPage> {
   bool _passwordVisible = false;
   bool _isLoading = false;
   String? _errorMessage;
+  late final LoginController _login = LoginController(
+    gateway: SupabaseAuthGateway(),
+    tokens: LocalTokenStore(),
+  );
 
   @override
   void dispose() {
@@ -28,35 +34,26 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _iniciarSesion() async {
+    if (_isLoading) return;
     FocusManager.instance.primaryFocus?.unfocus();
-
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-
-    try {
-      await Supabase.instance.client.auth.signInWithPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-
-      if (!mounted) return;
-
+    final success = await _login.signIn(
+      _emailController.text,
+      _passwordController.text,
+    );
+    if (!mounted) return;
+    if (success) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute<void>(
-          builder: (_) => const IncidenciasPage(),
-        ),
+        MaterialPageRoute<void>(builder: (_) => const IncidenciasPage()),
         (_) => false,
       );
-    } on AuthException catch (error) {
-      _mostrarError(_mensajeDeAuth(error));
-    } catch (_) {
-      _mostrarError('No pudimos iniciar sesión. Inténtalo de nuevo.');
+    } else {
+      _mostrarError(_login.error ?? 'No pudimos iniciar sesión.');
     }
   }
 
@@ -91,20 +88,6 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = false;
       _errorMessage = message;
     });
-  }
-
-  String _mensajeDeAuth(AuthException error) {
-    final message = error.message.toLowerCase();
-
-    if (message.contains('invalid login credentials')) {
-      return 'El correo o la contraseña no son correctos.';
-    }
-
-    if (message.contains('email not confirmed')) {
-      return 'Confirma tu correo electrónico para continuar.';
-    }
-
-    return 'No pudimos validar tus datos. Inténtalo de nuevo.';
   }
 
   String? _validarCorreo(String? value) {

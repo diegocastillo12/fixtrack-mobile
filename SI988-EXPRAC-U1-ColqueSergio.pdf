@@ -1,0 +1,217 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Length 3758 >>
+stream
+BT /F1 8.5 Tf 42 797 Td 11 TL
+(EXAMEN PRÁCTICO DE LA UNIDAD I — TIPO 1) Tj T*
+(SI-988 Soluciones Móviles II | FixTrack) Tj T*
+(Estudiante: Sergio Colque Ponce \(2022073503\)) Tj T*
+(Repositorio: https://github.com/diegocastillo12/fixtrack-mobile) Tj T*
+(Docente: Dr. Óscar Juan Jiménez Flores) Tj T*
+(1. Validación de formulario y feedback) Tj T*
+(La pantalla valida que el correo tenga estructura válida y que la contraseña tenga seis o) Tj T*
+(más caracteres. Form.validate detiene el flujo antes de contactar Supabase. Durante la) Tj T*
+(solicitud, _isLoading deshabilita el botón y muestra CircularProgressIndicator. Los) Tj T*
+(errores se muestran en la misma vista.) Tj T*
+(Archivos: app/lib/features/auth/presentation/login_page.dart) Tj T*
+([INSERTAR captura del código, error de validación en emulador y spinner activo]) Tj T*
+(2. Bloqueo de intentos) Tj T*
+(LoginController lleva failedAttempts en la lógica de negocio. Después de tres respuestas) Tj T*
+(rechazadas, el cuarto intento retorna antes de AuthGateway.signIn, muestra bloqueo durante) Tj T*
+(30 segundos y no envía una petición. Al terminar el plazo, el contador se reinicia.) Tj T*
+(Archivos: app/lib/features/auth/domain/login_controller.dart) Tj T*
+([INSERTAR captura de signIn con contador y corte antes del servicio]) Tj T*
+(3. Cierre de sesión ante HTTP 401) Tj T*
+(DioClient detecta 401 solo cuando la petición llevaba Authorization. Llama al callback) Tj T*
+(onUnauthorized y termina sin entrar en el bloque de reintentos. El callback borra) Tj T*
+(auth_token de SharedPreferences, cierra la sesión local de Supabase y navega al login,) Tj T*
+(eliminando las rutas anteriores.) Tj T*
+(Archivos: app/lib/core/network/dio_client.dart;) Tj T*
+(app/lib/features/incidencias/data/incidencia_repository_impl.dart) Tj T*
+([INSERTAR captura del interceptor y del callback de cierre]) Tj T*
+(4. Tres pruebas unitarias del login) Tj T*
+(Las pruebas a, b y c verifican el estado inicial sin sesión, la autenticación exitosa con) Tj T*
+(token guardado y el rechazo con una sola llamada al backend falso.) Tj T*
+(Archivos: app/test/examen_tipo1_test.dart) Tj T*
+([INSERTAR captura de terminal con comando y resultado PASS real]) Tj T*
+(5. Bloqueo y respuesta HTTP 401) Tj T*
+(La prueba d comprueba cero llamadas adicionales en el cuarto intento. La prueba e inyecta) Tj T*
+(401 mediante un HttpClientAdapter falso y verifica que se borra el token, se cierra la) Tj T*
+(sesión y se envía una sola petición.) Tj T*
+(Archivos: app/test/examen_tipo1_test.dart) Tj T*
+([INSERTAR captura de código completo de pruebas d y e y terminal PASS real]) Tj T*
+(Ejecución de pruebas) Tj T*
+(Desde la raíz del repositorio:) Tj T*
+(cd app
+flutter test test/examen_tipo1_test.dart) Tj T*
+(Estado de verificación: pendiente de ejecutar en una estación con Flutter SDK. No se) Tj T*
+(incluyen resultados ni capturas simuladas.) Tj T*
+(Código completo de las pruebas) Tj T*
+(import 'dart:convert';) Tj T*
+(import 'dart:typed_data';) Tj T*
+() Tj T*
+(import 'package:app/core/network/dio_client.dart';) Tj T*
+(import 'package:app/features/auth/domain/login_controller.dart';) Tj T*
+(import 'package:dio/dio.dart';) Tj T*
+(import 'package:flutter_test/flutter_test.dart';) Tj T*
+() Tj T*
+(void main\(\) {) Tj T*
+(  group\('Examen Tipo 1', \(\) {) Tj T*
+(    test\('a: estado inicial sin sesión', \(\) {) Tj T*
+(      final login = LoginController\(gateway: _AuthFake\(\), tokens: _TokensFake\(\)\);) Tj T*
+(      expect\(login.status, LoginStatus.unauthenticated\);) Tj T*
+(      expect\(login.failedAttempts, 0\);) Tj T*
+(    }\);) Tj T*
+() Tj T*
+(    test\('b: login exitoso guarda token y autentica', \(\) async {) Tj T*
+(      final auth = _AuthFake\(\);) Tj T*
+(      final tokens = _TokensFake\(\);) Tj T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 2935 >>
+stream
+BT /F1 8.5 Tf 42 797 Td 11 TL
+(      final login = LoginController\(gateway: auth, tokens: tokens\);) Tj T*
+(      expect\(await login.signIn\(' usuario@upt.pe ', 'secreto'\), isTrue\);) Tj T*
+(      expect\(auth.calls, 1\);) Tj T*
+(      expect\(auth.lastEmail, 'usuario@upt.pe'\);) Tj T*
+(      expect\(login.status, LoginStatus.authenticated\);) Tj T*
+(      expect\(tokens.token, 'token-de-prueba'\);) Tj T*
+(    }\);) Tj T*
+() Tj T*
+(    test\('c: login rechazado registra error sin reintento', \(\) async {) Tj T*
+(      final auth = _AuthFake\(reject: true\);) Tj T*
+(      final login = LoginController\(gateway: auth, tokens: _TokensFake\(\)\);) Tj T*
+(      expect\(await login.signIn\('usuario@upt.pe', 'invalida'\), isFalse\);) Tj T*
+(      expect\(login.status, LoginStatus.error\);) Tj T*
+(      expect\(auth.calls, 1\);) Tj T*
+(    }\);) Tj T*
+() Tj T*
+(    test\('d: el cuarto intento bloqueado genera cero llamadas', \(\) async {) Tj T*
+(      final auth = _AuthFake\(reject: true\);) Tj T*
+(      final login = LoginController\(gateway: auth, tokens: _TokensFake\(\)\);) Tj T*
+(      for \(var i = 0; i < 3; i++\) {) Tj T*
+(        expect\(await login.signIn\('usuario@upt.pe', 'invalida'\), isFalse\);) Tj T*
+(      }) Tj T*
+(      final callsBeforeFourth = auth.calls;) Tj T*
+(      expect\(await login.signIn\('usuario@upt.pe', 'invalida'\), isFalse\);) Tj T*
+(      expect\(auth.calls - callsBeforeFourth, 0\);) Tj T*
+(      expect\(login.status, LoginStatus.blocked\);) Tj T*
+(      expect\(login.error, contains\('Espera 30 segundos'\)\);) Tj T*
+(    }\);) Tj T*
+() Tj T*
+(    test\('e: HTTP 401 borra token y no reintenta', \(\) async {) Tj T*
+(      final tokens = _TokensFake\(\)..token = 'token-de-prueba';) Tj T*
+(      var sessionActive = true;) Tj T*
+(      final client = DioClient\() Tj T*
+(        baseUrl: 'http://localhost:4010',) Tj T*
+(        tokenProvider: \(\) async => sessionActive ? tokens.token : null,) Tj T*
+(        onUnauthorized: \(\) async {) Tj T*
+(          await tokens.clear\(\);) Tj T*
+(          sessionActive = false;) Tj T*
+(        },) Tj T*
+(      \);) Tj T*
+(      final adapter = _UnauthorizedAdapter\(\);) Tj T*
+(      client.dio.httpClientAdapter = adapter;) Tj T*
+(      await expectLater\(client.dio.get<dynamic>\('/recurso'\),) Tj T*
+(          throwsA\(isA<DioException>\(\)\)\);) Tj T*
+(      expect\(tokens.token, isNull\);) Tj T*
+(      expect\(sessionActive, isFalse\);) Tj T*
+(      expect\(adapter.calls, 1\);) Tj T*
+(      expect\(adapter.hadAuthorization, isTrue\);) Tj T*
+(    }\);) Tj T*
+(  }\);) Tj T*
+(}) Tj T*
+() Tj T*
+(class _AuthFake implements AuthGateway {) Tj T*
+(  _AuthFake\({this.reject = false}\);) Tj T*
+(  final bool reject;) Tj T*
+(  int calls = 0;) Tj T*
+(  String? lastEmail;) Tj T*
+() Tj T*
+(  @override) Tj T*
+(  Future<String> signIn\(String email, String password\) async {) Tj T*
+(    calls++;) Tj T*
+(    lastEmail = email;) Tj T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1160 >>
+stream
+BT /F1 8.5 Tf 42 797 Td 11 TL
+(    if \(reject\) throw StateError\('Credenciales rechazadas'\);) Tj T*
+(    return 'token-de-prueba';) Tj T*
+(  }) Tj T*
+(}) Tj T*
+() Tj T*
+(class _TokensFake implements TokenStore {) Tj T*
+(  String? token;) Tj T*
+() Tj T*
+(  @override) Tj T*
+(  Future<void> save\(String value\) async {) Tj T*
+(    token = value;) Tj T*
+(  }) Tj T*
+() Tj T*
+(  @override) Tj T*
+(  Future<void> clear\(\) async {) Tj T*
+(    token = null;) Tj T*
+(  }) Tj T*
+(}) Tj T*
+() Tj T*
+(class _UnauthorizedAdapter implements HttpClientAdapter {) Tj T*
+(  int calls = 0;) Tj T*
+(  bool hadAuthorization = false;) Tj T*
+() Tj T*
+(  @override) Tj T*
+(  Future<ResponseBody> fetch\(RequestOptions options,) Tj T*
+(      Stream<Uint8List>? requestStream, Future<void>? cancelFuture\) async {) Tj T*
+(    calls++;) Tj T*
+(    hadAuthorization = options.headers.containsKey\('Authorization'\);) Tj T*
+(    return ResponseBody.fromString\(jsonEncode\({'error': 'unauthorized'}\), 401,) Tj T*
+(        headers: {'content-type': ['application/json']}\);) Tj T*
+(  }) Tj T*
+() Tj T*
+(  @override) Tj T*
+(  void close\({bool force = false}\) {}) Tj T*
+(}) Tj T*
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 8 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000222 00000 n 
+0000004032 00000 n 
+0000004158 00000 n 
+0000007145 00000 n 
+0000007271 00000 n 
+0000008483 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+8609
+%%EOF
