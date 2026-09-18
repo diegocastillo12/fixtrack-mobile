@@ -1,144 +1,85 @@
-import 'dart:async';
-import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 
-class DioClient {
-  DioClient({
-    required String baseUrl,
-    required Future<String?> Function() tokenProvider,
-  }) {
-    dio = Dio(
-      BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        sendTimeout: const Duration(seconds: 10),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
+import 'failure.dart';
 
-    // 1. Autenticación.
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await tokenProvider();
+/// Mapeador centralizado para transformar errores de transporte y red
+/// en errores semánticos ([Failure]) de la aplicación FixTrack.
+class DioFailureMapper {
+  /// Transforma un error de transporte (timeout, conectividad, SocketException)
+  /// en su correspondiente [Failure] semántico:
+  /// - Timeout -> [TiempoAgotado] ('Tiempo agotado')
+  /// - Conectividad / SocketException -> [SinConexion] ('Sin conexión')
+  /// - Si ya es un [Failure], se devuelve directamente (evita doble transformación).
+  /// - Errores HTTP de servidor o validación no se confunden con desconexión.
+  static Failure map(Object error) {
+    // Evita doble transformación
+    if (error is Failure) {
+      return error;
+    }
 
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
+    if (error is SocketException) {
+      return const SinConexion();
+    }
 
-          handler.next(options);
-        },
-      ),
-    );
+    if (error is DioException) {
+      // Caso A: Tiempo agotado
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout) {
+        return const TiempoAgotado();
+      }
 
-    // 2. Registro seguro solo en modo debug.
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          assert(() {
-            final headers = Map<String, dynamic>.from(options.headers);
+      // Caso B: Sin conexión (SocketException o error de conexión Dio)
+      if (error.type == DioExceptionType.connectionError ||
+          error.error is SocketException) {
+        return const SinConexion();
+      }
 
-            for (final key in headers.keys.toList()) {
-              final lower = key.toLowerCase();
+      // Errores HTTP del servidor (no confundir con desconexión)
+      final statusCode = error.response?.statusCode;
+      if (statusCode != null) {
+        if (statusCode >= 500) {
+          return const ErrorServidor();
+        }
+        if (statusCode == 404) {
+          return const NoEncontrado();
+        }
+      }
+    }
 
-              if (lower == 'authorization' ||
-                  lower == 'cookie' ||
-                  lower == 'set-cookie') {
-                headers[key] = '***';
-              }
-            }
-
-            developer.log(
-              '→ ${options.method} ${options.uri} headers=$headers',
-              name: 'FixTrack HTTP',
-            );
-
-            return true;
-          }());
-
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          assert(() {
-            developer.log(
-              '← ${response.statusCode} ${response.requestOptions.uri}',
-              name: 'FixTrack HTTP',
-            );
-
-            return true;
-          }());
-
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          assert(() {
-            developer.log(
-              '✕ ${error.response?.statusCode ?? 'SIN RESPUESTA'} '
-              '${error.requestOptions.uri}',
-              name: 'FixTrack HTTP',
-            );
-
-            return true;
-          }());
-
-          handler.next(error);
-        },
-      ),
-    );
-
-    // 3. Reintentos.
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onError: (error, handler) async {
-          final request = error.requestOptions;
-          final statusCode = error.response?.statusCode;
-          final intentos = request.extra['retryCount'] as int? ?? 0;
-
-          final reintentable =
-              statusCode == null ||
-              statusCode == 429 ||
-              (statusCode >= 500 && statusCode <= 599);
-
-          if (!reintentable || intentos >= 3) {
-            return handler.next(error);
-          }
-
-          Duration espera;
-
-          if (statusCode == 429) {
-            final retryAfterHeader =
-                error.response?.headers.value('retry-after');
-
-            final segundos = int.tryParse(retryAfterHeader ?? '');
-
-            espera = segundos != null
-                ? Duration(seconds: segundos)
-                : Duration(milliseconds: 400 * (1 << intentos));
-          } else {
-            espera = Duration(
-              milliseconds: 400 * (1 << intentos),
-            );
-          }
-
-          request.extra['retryCount'] = intentos + 1;
-
-          await Future<void>.delayed(espera);
-
-          try {
-            final response = await dio.fetch<dynamic>(request);
-            return handler.resolve(response);
-          } on DioException catch (retryError) {
-            return handler.next(retryError);
-          }
-        },
-      ),
-    );
+    return const ErrorServidor();
   }
 
-  late final Dio dio;
-}
+  /// Retorna un [Failure] semántico únicamente si el error representa
+  /// una falla de transporte (timeout o ausencia de conexión).
+  /// Si no es un error de transporte (ej. errores HTTP 400, 422, 500), retorna `null`
+  /// para permitir que el repositorio maneje o relance el error sin clasificarlo erróneamente.
+  static Failure? mapTransportError(Object error) {
+    if (error is Failure) {
+      return error;
+    }
+
+    if (error is SocketException) {
+      return const SinConexion();
+    }
+
+    if (error is DioException) {
+      // Caso A: Tiempo agotado
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout) {
+        return const TiempoAgotado();
+      }
+
+      // Caso B: Sin conexión
+      if (error.type == DioExceptionType.connectionError ||
+          error.error is SocketException) {
+        return const SinConexion();
+      }
+    }
+
+    return null;
+  }
+}

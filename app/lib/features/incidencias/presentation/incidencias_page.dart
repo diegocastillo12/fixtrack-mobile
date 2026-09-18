@@ -91,18 +91,74 @@ class _IncidenciasPageState extends State<IncidenciasPage> {
 
       case IncidenciasEstado.error:
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(viewModel.mensajeError),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: viewModel.cargarIncidencias,
-                child: const Text('Reintentar'),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.cloud_off,
+                  size: 64,
+                  color: Colors.redAccent,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  viewModel.mensajeError.isNotEmpty
+                      ? viewModel.mensajeError
+                      : 'Error de conexión.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 24),
+
+                // ── Sub-estado 1: Bloqueo activo ───────────────────────────
+                if (viewModel.bloqueado) ...[
+                  Text(
+                    'Servicio temporalmente no disponible.\n'
+                    'Intenta nuevamente en ${viewModel.segundosRestantes} '
+                    'segundo${viewModel.segundosRestantes == 1 ? '' : 's'}.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: Colors.orange.shade800),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    // onPressed: null deshabilita el botón visualmente
+                    onPressed: null,
+                    child: const Text('Reintentar'),
+                  ),
+
+                // ── Sub-estado 2: Reintento en progreso ────────────────────
+                ] else if (viewModel.reintentoEnProgreso) ...[
+                  ElevatedButton(
+                    onPressed: null,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 8),
+                        Text('Reintentando...'),
+                      ],
+                    ),
+                  ),
+
+                // ── Sub-estado 3: Listo para reintentar ────────────────────
+                ] else ...[
+                  ElevatedButton(
+                    onPressed: viewModel.reintentar,
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ],
+            ),
           ),
         );
     }
   }
-}
+}

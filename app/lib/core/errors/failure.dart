@@ -5,12 +5,13 @@ sealed class Failure {
 }
 
 final class SinConexion extends Failure {
-  const SinConexion() : super('Sin conexión. Revise su red.');
+  const SinConexion([super.mensaje = 'Sin conexión']);
 }
 
 final class TiempoAgotado extends Failure {
-  const TiempoAgotado() : super('El servidor tardó demasiado.');
+  const TiempoAgotado([super.mensaje = 'Tiempo agotado']);
 }
+
 
 final class NoAutorizado extends Failure {
   const NoAutorizado() : super('Su sesión expiró.');

@@ -95,8 +95,32 @@ void main() {
         expect(diferencia.inMilliseconds, greaterThanOrEqualTo(900));
       }
     });
+
+    test('Configuración de timeout personalizado (Punto 2)', () {
+      final cliente = DioClient(
+        baseUrl: 'http://localhost:4010',
+        tokenProvider: () async => 'token-prueba',
+        timeout: const Duration(seconds: 3),
+      );
+
+      expect(cliente.dio.options.connectTimeout, const Duration(seconds: 3));
+      expect(cliente.dio.options.receiveTimeout, const Duration(seconds: 3));
+      expect(cliente.dio.options.sendTimeout, const Duration(seconds: 3));
+    });
+
+    test('Timeout por defecto es de 10 segundos', () {
+      final cliente = DioClient(
+        baseUrl: 'http://localhost:4010',
+        tokenProvider: () async => 'token-prueba',
+      );
+
+      expect(cliente.dio.options.connectTimeout, const Duration(seconds: 10));
+      expect(cliente.dio.options.receiveTimeout, const Duration(seconds: 10));
+      expect(cliente.dio.options.sendTimeout, const Duration(seconds: 10));
+    });
   });
 }
+
 
 class _RespuestaFake {
   const _RespuestaFake({
