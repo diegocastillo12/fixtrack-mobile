@@ -31,29 +31,17 @@ class IncidenciaRepositoryImpl implements IncidenciaRepository {
 
   @override
   Future<List<Incidencia>> obtenerIncidencias() async {
-    const datosDemo = [
-      {
-        'id': 'INC-001',
-        'titulo': 'Mouse no funciona',
-        'descripcion': 'El mouse de la computadora LAB-01 no responde.',
-        'estado': 'Pendiente',
-      },
-      {
-        'id': 'INC-002',
-        'titulo': 'Proyector sin imagen',
-        'descripcion': 'El proyector del laboratorio LAB-02 no muestra imagen.',
-        'estado': 'En progreso',
-      },
-      {
-        'id': 'INC-003',
-        'titulo': 'Teclado defectuoso',
-        'descripcion': 'Varias teclas del equipo LAB-03 no funcionan.',
-        'estado': 'Resuelto',
-      },
-    ];
+    final response = await _dio.get<dynamic>(
+      '/incidencias',
+      queryParameters: {'limit': 20},
+    );
+    final body = Map<String, dynamic>.from(response.data as Map);
+    final datos = body['data'] as List<dynamic>;
 
-    return datosDemo
-        .map((json) => IncidenciaDto.fromJson(json))
+    return datos
+        .map((json) => IncidenciaDto.fromJson(
+              Map<String, dynamic>.from(json as Map),
+            ))
         .map(IncidenciaMapper.toDomain)
         .toList();
   }
