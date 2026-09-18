@@ -1,0 +1,29 @@
+name: app
+description: "FixTrack - Sistema de incidencias e inventario de laboratorios UPT."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '^3.13.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  dio: ^5.7.0
+  connectivity_plus: ^6.1.0
+  shared_preferences: ^2.5.5
+  uuid: ^4.6.0
+  supabase_flutter: ^2.17.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  http_mock_adapter: ^0.6.1
+
+flutter:
+  uses-material-design: true
