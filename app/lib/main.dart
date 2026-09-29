@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'features/auth/presentation/login_page.dart';
-import 'features/incidencias/presentation/incidencias_page.dart';
-
+import 'features/auth/presentation/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,23 +31,15 @@ class FixTrackApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFF0D1B3E),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
+          },
+        ),
       ),
-      home: const _AppEntryPoint(),
+      home: const SplashPage(),
     );
-  }
-}
-
-class _AppEntryPoint extends StatelessWidget {
-  const _AppEntryPoint();
-
-  @override
-  Widget build(BuildContext context) {
-    try {
-      final session = Supabase.instance.client.auth.currentSession;
-
-      return session == null ? const LoginPage() : const IncidenciasPage();
-    } on StateError {
-      return const IncidenciasPage();
-    }
   }
 }

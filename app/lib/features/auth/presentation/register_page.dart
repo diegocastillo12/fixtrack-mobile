@@ -1,7 +1,21 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../incidencias/presentation/incidencias_page.dart';
+import '../../../core/navigation/dark_route.dart';
+import 'primer_ingreso_page.dart';
+
+// Paleta (misma que login)
+const _kNavy = Color(0xFF0D1B3E);
+const _kNavyLight = Color(0xFF162852);
+const _kBlue = Color(0xFF2563EB);
+const _kBlueLight = Color(0xFF3B82F6);
+const _kWhite = Colors.white;
+const _kWhite60 = Color(0x99FFFFFF);
+const _kWhite15 = Color(0x26FFFFFF);
+const _kRed = Color(0xFFEF4444);
+const _kGreen = Color(0xFF22C55E);
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -34,10 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _registrarse() async {
     FocusManager.instance.primaryFocus?.unfocus();
-
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -56,9 +67,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (response.session != null) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute<void>(
-            builder: (_) => const IncidenciasPage(),
-          ),
+          darkRoute(page: const PrimerIngresoPage()),
           (_) => false,
         );
         return;
@@ -66,19 +75,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
       setState(() {
         _isLoading = false;
-        _successMessage =
-            'Cuenta creada. Revisa tu correo para confirmar tu cuenta.';
+        _successMessage = 'Cuenta creada. Revisa tu correo para confirmarla.';
       });
     } on AuthException catch (error) {
+      // ignore: avoid_print
+      print('[FixTrack] RegisterException: ${error.message}');
       _mostrarError(_mensajeDeAuth(error));
-    } catch (_) {
+    } catch (e) {
+      // ignore: avoid_print
+      print('[FixTrack] Error inesperado en registro: $e');
       _mostrarError('No pudimos crear tu cuenta. Inténtalo de nuevo.');
     }
   }
 
   void _mostrarError(String message) {
     if (!mounted) return;
-
     setState(() {
       _isLoading = false;
       _errorMessage = message;
@@ -86,394 +97,398 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   String _mensajeDeAuth(AuthException error) {
-    final message = error.message.toLowerCase();
-
-    if (message.contains('already registered') ||
-        message.contains('already been registered')) {
+    final msg = error.message.toLowerCase();
+    if (msg.contains('already registered') || msg.contains('already been registered')) {
       return 'Ya existe una cuenta con este correo.';
     }
-
-    if (message.contains('password')) {
-      return 'La contraseña no cumple los requisitos.';
-    }
-
-    return 'Error de Supabase: ${error.message}';
+    if (msg.contains('password')) return 'La contraseña no cumple los requisitos.';
+    return 'Error: ${error.message}';
   }
 
   String? _validarNombre(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Escribe tu nombre';
-    }
-
+    if (value == null || value.trim().isEmpty) return 'Escribe tu nombre';
     return null;
   }
 
   String? _validarCorreo(String? value) {
     final email = value?.trim() ?? '';
-
-    if (email.isEmpty) {
-      return 'Escribe tu correo electrónico';
-    }
-
+    if (email.isEmpty) return 'Escribe tu correo electrónico';
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
       return 'Escribe un correo válido';
     }
-
     return null;
   }
 
   String? _validarPassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Escribe una contraseña';
-    }
-
-    if (value.length < 6) {
-      return 'Debe tener al menos 6 caracteres';
-    }
-
+    if (value == null || value.isEmpty) return 'Escribe una contraseña';
+    if (value.length < 6) return 'Debe tener al menos 6 caracteres';
     return null;
   }
 
   String? _validarConfirmacion(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Confirma tu contraseña';
-    }
-
-    if (value != _passwordController.text) {
-      return 'Las contraseñas no coinciden';
-    }
-
+    if (value == null || value.isEmpty) return 'Confirma tu contraseña';
+    if (value != _passwordController.text) return 'Las contraseñas no coinciden';
     return null;
   }
 
-  InputDecoration _decoracionCampo({
+  InputDecoration _field({
     required String label,
     required IconData icon,
-    Widget? suffixIcon,
+    Widget? suffix,
   }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon),
-      suffixIcon: suffixIcon,
+      labelStyle: const TextStyle(color: _kWhite60, fontSize: 14),
+      prefixIcon: Icon(icon, color: _kWhite60, size: 20),
+      suffixIcon: suffix,
       filled: true,
-      fillColor: const Color(0xFFF7F9FC),
+      fillColor: _kWhite15,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: _kWhite15),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: const BorderSide(color: _kWhite15),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF0F766E), width: 1.5),
+        borderSide: const BorderSide(color: _kBlue, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFDC2626)),
+        borderSide: const BorderSide(color: _kRed),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+        borderSide: const BorderSide(color: _kRed, width: 1.5),
       ),
+      errorStyle: const TextStyle(color: _kRed),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7F8),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const _RegisterHeader(),
-                  const SizedBox(height: 32),
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFFE4E9EE)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x140F172A),
-                          blurRadius: 24,
-                          offset: Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: _kNavy,
+      body: Stack(
+        children: [
+          // Fondo decorativo
+          Positioned(
+            top: -80,
+            right: -60,
+            child: _GlowCircle(size: 260, color: _kBlue.withAlpha(40)),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -80,
+            child: _GlowCircle(size: 300, color: _kBlue.withAlpha(30)),
+          ),
+
+          // Contenido
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 430),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Logo + nombre
+                      Column(
                         children: [
-                          Text(
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              height: 72,
+                              width: 72,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'FixTrack',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: _kWhite,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
                             'Crea tu cuenta',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF14213D),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Empieza a gestionar tus incidencias.',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          TextFormField(
-                            controller: _nameController,
-                            textCapitalization: TextCapitalization.words,
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.name],
-                            decoration: _decoracionCampo(
-                              label: 'Nombre',
-                              icon: Icons.person_outline_rounded,
-                            ),
-                            validator: _validarNombre,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.email],
-                            decoration: _decoracionCampo(
-                              label: 'Correo electrónico',
-                              icon: Icons.alternate_email_rounded,
-                            ),
-                            validator: _validarCorreo,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: !_passwordVisible,
-                            textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.newPassword],
-                            decoration: _decoracionCampo(
-                              label: 'Contraseña',
-                              icon: Icons.lock_outline_rounded,
-                              suffixIcon: IconButton(
-                                tooltip: _passwordVisible
-                                    ? 'Ocultar contraseña'
-                                    : 'Mostrar contraseña',
-                                onPressed: () {
-                                  setState(() {
-                                    _passwordVisible = !_passwordVisible;
-                                  });
-                                },
-                                icon: Icon(
-                                  _passwordVisible
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                ),
-                              ),
-                            ),
-                            validator: _validarPassword,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _confirmPasswordController,
-                            obscureText: !_confirmPasswordVisible,
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.newPassword],
-                            onFieldSubmitted: (_) => _registrarse(),
-                            decoration: _decoracionCampo(
-                              label: 'Confirmar contraseña',
-                              icon: Icons.lock_reset_outlined,
-                              suffixIcon: IconButton(
-                                tooltip: _confirmPasswordVisible
-                                    ? 'Ocultar contraseña'
-                                    : 'Mostrar contraseña',
-                                onPressed: () {
-                                  setState(() {
-                                    _confirmPasswordVisible =
-                                        !_confirmPasswordVisible;
-                                  });
-                                },
-                                icon: Icon(
-                                  _confirmPasswordVisible
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                ),
-                              ),
-                            ),
-                            validator: _validarConfirmacion,
-                          ),
-                          if (_errorMessage != null) ...[
-                            const SizedBox(height: 16),
-                            _RegisterMessage(
-                              message: _errorMessage!,
-                              isSuccess: false,
-                            ),
-                          ],
-                          if (_successMessage != null) ...[
-                            const SizedBox(height: 16),
-                            _RegisterMessage(
-                              message: _successMessage!,
-                              isSuccess: true,
-                            ),
-                          ],
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            height: 54,
-                            child: FilledButton(
-                              onPressed: _isLoading ? null : _registrarse,
-                              style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF0F766E),
-                                disabledBackgroundColor:
-                                    const Color(0xFF94A3B8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 22,
-                                      width: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Crear cuenta',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _kWhite60,
                             ),
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 28),
+
+                      // Tarjeta glass
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: _kNavyLight.withAlpha(200),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: _kWhite15, width: 1),
+                            ),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Registro',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                      color: _kWhite,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Empieza a gestionar tus incidencias.',
+                                    style: TextStyle(fontSize: 13, color: _kWhite60),
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Nombre
+                                  TextFormField(
+                                    controller: _nameController,
+                                    textCapitalization: TextCapitalization.words,
+                                    textInputAction: TextInputAction.next,
+                                    autofillHints: const [AutofillHints.name],
+                                    style: const TextStyle(color: _kWhite),
+                                    decoration: _field(
+                                      label: 'Nombre completo',
+                                      icon: Icons.person_outline_rounded,
+                                    ),
+                                    validator: _validarNombre,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // Email
+                                  TextFormField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    textInputAction: TextInputAction.next,
+                                    autofillHints: const [AutofillHints.email],
+                                    style: const TextStyle(color: _kWhite),
+                                    decoration: _field(
+                                      label: 'Correo electrónico',
+                                      icon: Icons.alternate_email_rounded,
+                                    ),
+                                    validator: _validarCorreo,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // Contraseña
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: !_passwordVisible,
+                                    textInputAction: TextInputAction.next,
+                                    autofillHints: const [AutofillHints.newPassword],
+                                    style: const TextStyle(color: _kWhite),
+                                    decoration: _field(
+                                      label: 'Contraseña',
+                                      icon: Icons.lock_outline_rounded,
+                                      suffix: IconButton(
+                                        onPressed: () => setState(
+                                          () => _passwordVisible = !_passwordVisible,
+                                        ),
+                                        icon: Icon(
+                                          _passwordVisible
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: _kWhite60,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: _validarPassword,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // Confirmar contraseña
+                                  TextFormField(
+                                    controller: _confirmPasswordController,
+                                    obscureText: !_confirmPasswordVisible,
+                                    textInputAction: TextInputAction.done,
+                                    autofillHints: const [AutofillHints.newPassword],
+                                    onFieldSubmitted: (_) => _registrarse(),
+                                    style: const TextStyle(color: _kWhite),
+                                    decoration: _field(
+                                      label: 'Confirmar contraseña',
+                                      icon: Icons.lock_reset_outlined,
+                                      suffix: IconButton(
+                                        onPressed: () => setState(
+                                          () => _confirmPasswordVisible =
+                                              !_confirmPasswordVisible,
+                                        ),
+                                        icon: Icon(
+                                          _confirmPasswordVisible
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: _kWhite60,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: _validarConfirmacion,
+                                  ),
+
+                                  // Error
+                                  if (_errorMessage != null) ...[
+                                    const SizedBox(height: 16),
+                                    _Banner(
+                                      message: _errorMessage!,
+                                      isSuccess: false,
+                                    ),
+                                  ],
+
+                                  // Éxito
+                                  if (_successMessage != null) ...[
+                                    const SizedBox(height: 16),
+                                    _Banner(
+                                      message: _successMessage!,
+                                      isSuccess: true,
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 24),
+
+                                  // Botón crear cuenta
+                                  SizedBox(
+                                    height: 52,
+                                    child: FilledButton(
+                                      onPressed: _isLoading ? null : _registrarse,
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: _kBlue,
+                                        disabledBackgroundColor: _kBlue.withAlpha(100),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(14),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              height: 22,
+                                              width: 22,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2.5,
+                                                color: _kWhite,
+                                              ),
+                                            )
+                                          : const Text(
+                                              'Crear cuenta',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                                color: _kWhite,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  // Ya tengo cuenta
+                                  TextButton(
+                                    onPressed: _isLoading
+                                        ? null
+                                        : () => Navigator.of(context).pop(),
+                                    child: const Text(
+                                      '¿Ya tienes cuenta? Iniciar sesión',
+                                      style: TextStyle(
+                                        color: _kBlueLight,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+                      const Text(
+                        'FixTrack · Gestión de incidencias',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: _kWhite60,
+                          fontSize: 11,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    child: const Text('Ya tengo una cuenta · Iniciar sesión'),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'FixTrack · Gestión de incidencias',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF64748B),
-                      letterSpacing: .2,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _RegisterHeader extends StatelessWidget {
-  const _RegisterHeader();
+// ── Widgets auxiliares ──────────────────────────────────────────────────────
+
+class _GlowCircle extends StatelessWidget {
+  const _GlowCircle({required this.size, required this.color});
+  final double size;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        Container(
-          height: 58,
-          width: 58,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F766E),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: const Icon(
-            Icons.handyman_rounded,
-            color: Colors.white,
-            size: 30,
-          ),
-        ),
-        const SizedBox(width: 14),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'FixTrack',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF14213D),
-              ),
-            ),
-            Text(
-              'Todo bajo control',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF0F766E),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ],
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
 
-class _RegisterMessage extends StatelessWidget {
-  const _RegisterMessage({required this.message, required this.isSuccess});
-
+class _Banner extends StatelessWidget {
+  const _Banner({required this.message, required this.isSuccess});
   final String message;
   final bool isSuccess;
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isSuccess
-        ? const Color(0xFFECFDF5)
-        : const Color(0xFFFFF1F2);
-    final borderColor = isSuccess
-        ? const Color(0xFFA7F3D0)
-        : const Color(0xFFFECACA);
-    final textColor = isSuccess
-        ? const Color(0xFF047857)
-        : const Color(0xFF991B1B);
-
+    final color = isSuccess ? _kGreen : _kRed;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: color.withAlpha(30),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: color.withAlpha(80)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            isSuccess ? Icons.check_circle_outline : Icons.error_outline,
-            color: textColor,
-            size: 20,
+            isSuccess ? Icons.check_circle_outline : Icons.error_outline_rounded,
+            color: color,
+            size: 18,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 13,
-                height: 1.3,
-              ),
+              style: TextStyle(color: color, fontSize: 13, height: 1.3),
             ),
           ),
         ],
