@@ -7,6 +7,7 @@ class DioClient {
   DioClient({
     required String baseUrl,
     required Future<String?> Function() tokenProvider,
+    Future<void> Function()? onUnauthorized,
   }) {
     dio = Dio(
       BaseOptions(
@@ -55,6 +56,11 @@ class DioClient {
       InterceptorsWrapper(
         onError: (error, handler) async {
           final request = error.requestOptions;
+          if (error.response?.statusCode == 401 &&
+              request.headers.containsKey('Authorization')) {
+            if (onUnauthorized != null) await onUnauthorized();
+            return handler.next(error);
+          }
           final retries = request.extra['retryCount'] as int? ?? 0;
 
           final retryable =

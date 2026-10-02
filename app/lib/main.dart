@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'features/auth/presentation/login_page.dart';
 import 'features/incidencias/presentation/incidencias_page.dart';
+import 'core/navigation/app_navigator.dart';
 
 
 Future<void> main() async {
@@ -28,6 +29,7 @@ class FixTrackApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'FixTrack',
       theme: ThemeData(
